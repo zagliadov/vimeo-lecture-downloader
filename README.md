@@ -21,11 +21,11 @@ chmod +x download_videos.sh
 
 ## Использование
 
-### Скачивание видео из iframe
+### Скачивание видео из iframe (рекомендуемый способ)
 
 1. Создайте файл `iframe.html` и вставьте в него HTML-код iframe:
 ```html
-<iframe id="lect0101" src="https://player.vimeo.com/video/1038888708#t=0m0s?title=0&byline=0&portrait=0" style="position:absolute;top:0;left:0;width:100%;height:100%;" allow="autoplay; fullscreen" allowfullscreen="" frameborder="0"></iframe>
+<iframe id="lect0101" src="https://player.vimeo.com/video/1038888708#t=0m0s?title=0&amp;byline=0&amp;portrait=0" style="position:absolute;top:0;left:0;width:100%;height:100%;" allow="autoplay; fullscreen" allowfullscreen="" frameborder="0"></iframe>
 ```
 
 2. Замените `src` на реальный src видео из Vimeo 
@@ -37,17 +37,13 @@ chmod +x download_videos.sh
 
 ### Скачивание видео по прямому URL
 
-Вы также можете скачать видео, используя прямой URL:
+Для некоторых видео Vimeo требуется указать URL страницы, на которой встроено видео. В этом случае используйте команду:
 
 ```bash
-./download_videos.sh "https://player.vimeo.com/video/ID_ВИДЕО#t=0m0s?title=0&byline=0&portrait=0"
+./download_videos.sh "https://player.vimeo.com/video/ID_ВИДЕО#t=0m0s?title=0&byline=0&portrait=0" "https://online.cnmstudent.com/course/view.php?id=108"
 ```
 
-или
-
-```bash
-./download_videos.sh "https://vimeo.com/ID_ВИДЕО"
-```
+Где второй параметр - это URL страницы курса, на которой встроено видео.
 
 ## Где найти ID видео
 
@@ -63,6 +59,7 @@ chmod +x download_videos.sh
 - Поддерживается скачивание субтитров (если доступны)
 - Автоматически извлекается URL из iframe
 - Используются cookies из браузера для авторизации
+- Для некоторых видео требуется указать URL страницы встраивания
 
 ## Примеры
 
@@ -73,11 +70,11 @@ chmod +x download_videos.sh
 
 ### Примеры команд
 ```bash
-# Скачать видео из iframe
+# Скачать видео из iframe (рекомендуемый способ)
 ./download_videos.sh iframe.html
 
-# Скачать видео по прямому URL
-./download_videos.sh "https://vimeo.com/1038888708"
+# Скачать видео по прямому URL с указанием страницы встраивания
+./download_videos.sh "https://player.vimeo.com/video/1038888708#t=0m0s?title=0&byline=0&portrait=0" "https://online.cnmstudent.com/course/view.php?id=108"
 ```
 
 ## Примечания
@@ -85,3 +82,5 @@ chmod +x download_videos.sh
 - Убедитесь, что вы авторизованы в браузере Chrome перед запуском скрипта
 - Видео сохраняются в директории `downloads` с оригинальными названиями
 - Если видео защищено, убедитесь, что у вас есть доступ к нему через браузер
+- Для некоторых видео требуется указать URL страницы, на которой встроено видео
+- Рекомендуется использовать способ с iframe, так как он автоматически определяет все необходимые параметры

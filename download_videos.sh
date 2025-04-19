@@ -181,6 +181,7 @@ download_video() {
     local url="$1"
     local embed_url="$2"
     local download_dir="downloads"
+    local success=false
     
     echo "Скачиваем: $url"
     if [ -n "$embed_url" ]; then
@@ -238,9 +239,15 @@ download_video() {
     if [[ $url == *"vimeo.com"* ]]; then
         echo "Обнаружен URL Vimeo, используем специальные параметры..."
         
+        # Если не указан URL страницы встраивания, используем URL курса
+        if [ -z "$embed_url" ]; then
+            embed_url="https://online.cnmstudent.com/course/view.php?id=108"
+            echo "Используем URL страницы встраивания по умолчанию: $embed_url"
+        fi
+        
         # Сначала получаем список доступных форматов
         echo "Получаем список доступных форматов..."
-        yt-dlp -F "$url" --cookies "$cookie_file" --cookies-from-browser chrome
+        yt-dlp -F "$url" --cookies "$cookie_file" --cookies-from-browser chrome --referer "$embed_url"
         
         # Формируем команду для скачивания с более гибким выбором формата
         local cmd="yt-dlp -o \"$download_dir/%(title)s.%(ext)s\" \
@@ -274,56 +281,29 @@ download_video() {
         
         # Добавляем URL видео и выполняем команду
         cmd="$cmd \"$url\""
-        eval "$cmd"
+        if eval "$cmd"; then
+            success=true
+        fi
     else
         # Для других источников используем стандартные параметры с cookies
-        yt-dlp -o "$download_dir/%(title)s.%(ext)s" \
+        if yt-dlp -o "$download_dir/%(title)s.%(ext)s" \
             --format "best" \
             --cookies "$cookie_file" \
             --cookies-from-browser chrome \
-            "$url"
+            "$url"; then
+            success=true
+        fi
     fi
     
     # Удаляем временный файл cookies
     rm -f "$cookie_file"
     
-    if [ $? -eq 0 ]; then
+    if [ "$success" = true ]; then
         echo "Успешно скачано: $url"
+        return 0
     else
         echo "Ошибка при скачивании: $url"
-        # Если не удалось скачать, пробуем использовать cookies и дополнительные заголовки
-        if [[ $url == *"vimeo.com"* ]]; then
-            echo "Пробуем скачать с использованием дополнительных параметров..."
-            yt-dlp -o "$download_dir/%(title)s.%(ext)s" \
-                --format "bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best" \
-                --add-header "Referer: $embed_url" \
-                --add-header "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36" \
-                --add-header "Origin: https://online.cnmstudent.com" \
-                --add-header "Accept: */*" \
-                --add-header "Accept-Language: en-US,en;q=0.9" \
-                --add-header "Accept-Encoding: gzip, deflate, br" \
-                --add-header "Connection: keep-alive" \
-                --add-header "Sec-Fetch-Dest: empty" \
-                --add-header "Sec-Fetch-Mode: cors" \
-                --add-header "Sec-Fetch-Site: cross-site" \
-                --cookies "$cookie_file" \
-                --cookies-from-browser chrome \
-                --no-check-certificates \
-                --no-warnings \
-                --ignore-errors \
-                --retries 10 \
-                --fragment-retries 10 \
-                --skip-unavailable-fragments \
-                --extractor-args "vimeo:referrer=$embed_url" \
-                --merge-output-format mp4 \
-                --prefer-free-formats \
-                --write-subs \
-                --write-auto-subs \
-                --embed-subs \
-                --embed-thumbnail \
-                --embed-metadata \
-                "$url"
-        fi
+        return 1
     fi
 }
 
